@@ -5,7 +5,7 @@ import networkx as nx
 import numpy as np
 
 st.set_page_config(page_title="Simulación Estafa Piramidal", layout="wide")
-st.title("Simulación de Estafa Piramidal — Resultados guardados")
+st.title("Simulación de Estafa Piramidal")
 
 st.markdown("""
 **Autores:**  
@@ -101,20 +101,38 @@ st.metric("Máxima ganancia", f"{max_ganancia:.2f}")
 st.metric("Mínima ganancia", f"{min_ganancia:.2f}")
 st.write(f"Ganadores: {ganadores} ({ganadores/total*100:.1f}%) | Perdedores: {perdedores} ({perdedores/total*100:.1f}%)")
 
-# Visualización de red
-color_map = []
-for n, a in G.nodes(data=True):
-    if a["estado"] == "ignorante":
-        color_map.append("lightgray")
-    elif a["estado"] == "participante":
-        color_map.append("orange")
-    elif a["estado"] == "promotor":
-        color_map.append("red")
 
-fig, ax = plt.subplots(figsize=(7, 7))
-pos = nx.spring_layout(G, seed=42)
-nx.draw_networkx_nodes(G, pos, node_color=color_map, node_size=30, alpha=0.8, ax=ax)
-nx.draw_networkx_edges(G, pos, width=0.3, alpha=0.3, ax=ax)
-ax.set_title("Red al final de la simulación\n(gris=ignorante, naranja=participante, rojo=promotor)")
-ax.axis("off")
-st.pyplot(fig)
+
+st.markdown("## Visualización de la red")
+
+col1, col2 = st.columns(2)
+
+# Momento de ingreso
+with col1:
+    colors = [a["paso_union"] if a["paso_union"] else 0 for _, a in G.nodes(data=True)]
+    fig1, ax1 = plt.subplots(figsize=(6, 6))
+    pos = nx.spring_layout(G, seed=42)
+    nx.draw(G, pos=pos, node_color=colors, cmap=plt.cm.plasma, node_size=40, alpha=0.8, ax=ax1)
+    ax1.set_title("Momento de ingreso a la estafa\n(colores claros = más temprano)")
+    ax1.axis("off")
+    plt.tight_layout()
+    st.pyplot(fig1)
+
+# Estado final
+with col2:
+    color_map = []
+    for _, a in G.nodes(data=True):
+        if a["estado"] == "ignorante":
+            color_map.append("lightgray")
+        elif a["estado"] == "participante":
+            color_map.append("orange")
+        elif a["estado"] == "promotor":
+            color_map.append("red")
+
+    fig2, ax2 = plt.subplots(figsize=(6, 6))
+    nx.draw_networkx_nodes(G, pos, node_color=color_map, node_size=30, alpha=0.8, ax=ax2)
+    nx.draw_networkx_edges(G, pos, width=0.3, alpha=0.3, ax=ax2)
+    ax2.set_title("Red al final de la simulación\n(gris=ignorante, naranja=participante, rojo=promotor)")
+    ax2.axis("off")
+    plt.tight_layout()
+    st.pyplot(fig2)
